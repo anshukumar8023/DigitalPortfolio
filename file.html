@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anshu Kumar | Android & Cloud Engineer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --bg-dark: #020617;
+            --bg-light: #f8fafc;
+            --primary: #3b82f6;
+        }
+
+        * { font-family: 'Inter', sans-serif; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        html.dark body { background-color: var(--bg-dark); color: #f1f5f9; }
+        html.light body { background-color: var(--bg-light); color: #1e293b; }
+
+        /* Animated Background Blobs */
+        .bg-blob {
+            position: fixed;
+            width: 70vw;
+            height: 70vw;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.15;
+            animation: float 25s infinite alternate ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translate(-10%, -10%) rotate(0deg); }
+            100% { transform: translate(20%, 20%) rotate(360deg); }
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .light .glass {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        /* Content Transitions */
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nav-btn.active-nav {
+            background-color: var(--primary);
+            color: white !important;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Live Blinking Cursor Animation */
+        @keyframes blink-cursor {
+            from, to { border-color: transparent }
+            50% { border-color: #3b82f6; }
+        }
+
+        .live-cursor {
+            border-right: 3px solid #3b82f6;
+            animation: blink-cursor 1s step-end infinite;
+            padding-right: 4px;
+        }
+
+        /* Hover Effects */
+        .cert-card:hover .cert-img, .project-card:hover .project-img { transform: scale(1.08); }
+        .cert-img, .project-img { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        /* Modal Backdrop */
+        #cert-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #modal-img {
+            max-width: 90vw;
+            max-height: 85vh;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Image Preview Modal -->
+    <div id="cert-modal" onclick="closeCertModal()">
+        <div class="absolute top-6 right-6 flex gap-4">
+            <button class="text-white p-3 glass rounded-full hover:bg-white/20 transition-all">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div class="relative group" onclick="event.stopPropagation()">
+            <img id="modal-img" src="" alt="Certificate Preview" class="rounded-xl object-contain">
+            <p id="modal-caption" class="text-center mt-4 text-slate-400 font-medium"></p>
+        </div>
+    </div>
+
+    <!-- Dynamic Background -->
+    <div class="bg-blob bg-blue-900/40 top-[-10%] left-[-10%]"></div>
+    <div class="bg-blob bg-indigo-900/40 bottom-[-10%] right-[-10%]" style="animation-delay: -5s;"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 px-4 py-8">
+        <div class="max-w-5xl mx-auto glass rounded-2xl px-6 py-4 flex items-center justify-between">
+            <div class="text-2xl font-black tracking-tighter cursor-pointer" onclick="switchTab('home')">
+                <span class="text-blue-500">A.K<span class="text-blue-500">.</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-1">
+                <button onclick="switchTab('home')" class="nav-btn px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5" data-tab="home">Home</button>
+                <button onclick="switchTab('identity')" class="nav-btn px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5" data-tab="identity">Identity</button>
+                <button onclick="switchTab('certificates')" class="nav-btn px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5" data-tab="certificates">Certificates</button>
+                <button onclick="switchTab('projects')" class="nav-btn px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5" data-tab="projects">Projects</button>
+                <button onclick="switchTab('contact')" class="nav-btn px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/5" data-tab="contact">Contact</button>
+            </div>
+
+            <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 transition-colors">
+                <i data-lucide="sun" class="sun-icon hidden w-5 h-5 text-yellow-400"></i>
+                <i data-lucide="moon" class="moon-icon hidden w-5 h-5 text-blue-400"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-40 pb-20 px-6 max-w-5xl mx-auto min-h-screen">
+
+        <!-- HOME SECTION -->
+        <section id="home" class="tab-content active text-center relative">
+            <div class="relative inline-block mb-8 reveal">
+                <div class="absolute -inset-4 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+                <div class="relative w-44 h-44 md:w-56 md:h-56 rounded-full bg-slate-800 overflow-hidden border-2 border-white/10 shadow-2xl">
+                    <img src="profi.png" alt="Anshu Kumar" class="w-full h-full object-cover">
+                </div>
+            </div>
+            
+            <h1 class="text-6xl md:text-8xl font-bold mb-4 tracking-tight reveal">Anshu Kumar</h1>
+            <p class="text-xl md:text-2xl text-slate-400 mb-10 reveal font-medium">
+                Android Developer <span class="text-blue-500 font-bold">&</span> Cloud Engineer
+            </p>
+
+            <!-- Tech Pills -->
+            <div class="flex flex-wrap justify-center gap-3 mb-12 reveal">
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 text-sm font-medium">
+                    <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i> Android SDK
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 text-sm font-medium">
+                    <i data-lucide="cloud" class="w-4 h-4 text-purple-400"></i> AWS Cloud
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 text-sm font-medium">
+                    <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i> Linux Admin
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/10 text-sm font-medium">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-red-400"></i> Cloud Security
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-6 reveal">
+                <a href="https://wa.me/917696254439" target="_blank" class="bg-[#10a345] hover:bg-[#0d8a3a] text-white px-10 py-4 rounded-full font-bold transition-all flex items-center gap-3 shadow-xl shadow-green-600/20 group">
+                    <i data-lucide="message-circle" class="w-6 h-6 group-hover:scale-110 transition-transform"></i> Let's Chat
+                </a>
+                <div class="flex gap-4">
+                    <a href="https://github.com/anshukumar8023" target="_blank" class="w-14 h-14 bg-slate-800/80 rounded-full flex items-center justify-center hover:bg-slate-700 transition-all border border-white/5">
+                        <i data-lucide="github" class="w-6 h-6"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/anshu-kumar-8023na" target="_blank" class="w-14 h-14 bg-slate-800/80 rounded-full flex items-center justify-center hover:bg-slate-700 text-blue-400 transition-all border border-white/5">
+                        <i data-lucide="linkedin" class="w-6 h-6"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- IDENTITY SECTION -->
+        <section id="identity" class="tab-content">
+            <div class="glass p-10 md:p-16 rounded-[2.5rem] reveal">
+                <h2 class="text-4xl font-black mb-8 flex items-center gap-4">
+                    <i data-lucide="fingerprint" class="text-blue-500 w-10 h-10"></i>
+                    Hi, I'm Anshu Kumar
+                </h2>
+                <div class="space-y-8 text-xl leading-relaxed text-slate-400">
+                    <p class="text-2xl text-white font-bold">Bridging Android Experiences with Cloud Infrastructure.</p>
+                    
+                    <p>I’m currently a <span class="text-white">B.Tech student in Computer Science and Engineering</span>, focusing on building solid, reliable systems using Amazon Web Services (AWS). I’ve spent my time learning how different cloud services fit together to create architectures that aren't just fast, but also cost-effective and secure. For me, the best part of cloud computing is the automation—making sure everything deploys smoothly and works every time.</p>
+
+                    <p>My core projects include an <span class="text-white">Eco-Friendly Fuels Awareness Platform</span> and a comprehensive <span class="text-white">Online Coaching Platform</span>. I didn't just design the interfaces; I built them with a secure Website setup using public and private subnets to keep all platform data safe. I’ve also worked on my networking roots, earning a certification in Fundamentals of Network Communication to really understand how data moves across the web.</p>
+
+                    <p>As an <span class="text-blue-400">Android Developer</span>, I specialize in creating high-performance mobile applications that integrate seamlessly with these cloud backends. Right now, I’m diving deeper into DevOps, Linux, and Cloud Security to use AI in making cloud platforms even smarter—from self-managing resources to intelligent automation. I’m not just learning to code; I'm learning to architect the future.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8">
+                        <div class="p-6 glass rounded-3xl border-l-4 border-blue-500">
+                            <h4 class="text-white font-bold mb-2">Android Ecosystem</h4>
+                            <p class="text-sm">Expertise in connecting native mobile applications with resilient AWS-based cloud architectures.</p>
+                        </div>
+                        <div class="p-6 glass rounded-3xl border-l-4 border-indigo-500">
+                            <h4 class="text-white font-bold mb-2">Cloud Strategy</h4>
+                            <p class="text-sm">Focus on secure networking, packet switching, and cost-optimized serverless deployments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CERTIFICATES SECTION -->
+        <section id="certificates" class="tab-content">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 reveal">
+                <div>
+                    <h2 class="text-4xl font-black mb-2 flex items-center gap-4">
+                        <i data-lucide="award" class="text-yellow-500 w-10 h-10"></i>
+                        Certifications
+                    </h2>
+                    <p class="text-slate-400">Validated expertise from industry leaders and top universities.</p>
+                </div>
+                <div class="text-xs font-bold text-slate-500 tracking-widest uppercase">
+                    Total: 6 Certificates
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="cert-card glass overflow-hidden rounded-[2rem] border border-white/5 flex flex-col reveal cursor-pointer group" onclick="openCertModal('Anshu.jpg', 'Generative AI & LLM Engineering')">
+                    <div class="h-48 overflow-hidden relative bg-slate-900">
+                        <img src="Anshu.jpg" alt="Generative AI" class="cert-img w-full h-full object-cover opacity-60 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                             <span class="bg-blue-600/20 text-blue-400 text-[10px] font-black px-3 py-1 rounded-full border border-blue-500/30 uppercase tracking-tighter">Infosys Springboard</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-white text-lg mb-2">ChatGPT-4 Prompt Eng.</h3>
+                        <p class="text-slate-400 text-sm leading-snug">Mastery in Generative AI, LLM prompting, and AI workflow automation.</p>
+                    </div>
+                </div>
+
+                <div class="cert-card glass overflow-hidden rounded-[2rem] border border-white/5 flex flex-col reveal cursor-pointer group" onclick="openCertModal('Screenshot 2026-01-30 212602.png', 'Computer Programming Specialization')">
+                    <div class="h-48 overflow-hidden relative bg-slate-900">
+                        <img src="Screenshot 2026-01-30 212602.png" alt="Programming" class="cert-img w-full h-full object-cover opacity-60 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                             <span class="bg-purple-600/20 text-purple-400 text-[10px] font-black px-3 py-1 rounded-full border border-purple-500/30 uppercase tracking-tighter">LPU / iamneo</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-white text-lg mb-2">Computer Programming</h3>
+                        <p class="text-slate-400 text-sm leading-snug">72+ hours of intensive coding, algorithms, and logical problem-solving.</p>
+                    </div>
+                </div>
+
+                <div class="cert-card glass overflow-hidden rounded-[2rem] border border-white/5 flex flex-col reveal cursor-pointer group" onclick="openCertModal('Screenshot 2026-02-02 113024.png', 'Python for Data Science')">
+                    <div class="h-48 overflow-hidden relative bg-slate-900">
+                        <img src="Screenshot 2026-02-02 113024.png" alt="Python Data Science" class="cert-img w-full h-full object-cover opacity-60 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                             <span class="bg-indigo-600/20 text-indigo-400 text-[10px] font-black px-3 py-1 rounded-full border border-indigo-500/30 uppercase tracking-tighter">Board Infinity</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-white text-lg mb-2">Python for Data Science</h3>
+                        <p class="text-slate-400 text-sm leading-snug">Analytical computing using NumPy, Pandas, and data visualization tools.</p>
+                    </div>
+                </div>
+
+                <div class="cert-card glass overflow-hidden rounded-[2rem] border border-white/5 flex flex-col reveal cursor-pointer group" onclick="openCertModal('Screenshot 2026-02-10 200911.png', 'IBM: Hardware & Operating Systems')">
+                    <div class="h-48 overflow-hidden relative bg-slate-900">
+                        <img src="Screenshot 2026-02-10 200911.png" alt="IBM OS" class="cert-img w-full h-full object-cover opacity-60 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                             <span class="bg-sky-600/20 text-sky-400 text-[10px] font-black px-3 py-1 rounded-full border border-sky-500/30 uppercase tracking-tighter">IBM / Coursera</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-white text-lg mb-2">Hardware & OS</h3>
+                        <p class="text-slate-400 text-sm leading-snug">Foundational knowledge in computing hardware and kernel-level OS operations.</p>
+                    </div>
+                </div>
+
+                <div class="cert-card glass overflow-hidden rounded-[2rem] border border-white/5 flex flex-col reveal cursor-pointer group" onclick="openCertModal('total.png', 'Networking Fundamentals')">
+                    <div class="h-48 overflow-hidden relative bg-slate-900">
+                        <img src="total.png" alt="Networking Cert" class="cert-img w-full h-full object-cover opacity-60 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                             <span class="bg-blue-600/20 text-blue-400 text-[10px] font-black px-3 py-1 rounded-full border border-blue-500/30 uppercase tracking-tighter">Univ. of Colorado</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-white text-lg mb-2">Network Communication</h3>
+                        <p class="text-slate-400 text-sm leading-snug">Advanced study of data transfer protocols, latency, and networking stacks.</p>
+                    </div>
+                </div>
+
+                <div class="cert-card glass overflow-hidden rounded-[2rem] border border-white/5 flex flex-col reveal cursor-pointer group" onclick="openCertModal('half.png', 'Capital Markets - Infosys')">
+                    <div class="h-48 overflow-hidden relative bg-slate-900">
+                        <img src="half.png" alt="Capital Market Cert" class="cert-img w-full h-full object-cover opacity-60 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                             <span class="bg-emerald-600/20 text-emerald-400 text-[10px] font-black px-3 py-1 rounded-full border border-emerald-500/30 uppercase tracking-tighter">Infosys Limited</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-white text-lg mb-2">Capital Markets</h3>
+                        <p class="text-slate-400 text-sm leading-snug">Understanding financial ecosystem, trading systems, and market dynamics.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECTS SECTION -->
+        <section id="projects" class="tab-content">
+            <h2 class="text-4xl font-black mb-12 flex items-center gap-4">
+                <i data-lucide="layers" class="text-green-500 w-10 h-10"></i>
+                Build Log
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Project Card 1 with Image -->
+                <div class="project-card glass rounded-[2.5rem] overflow-hidden group reveal">
+                    <div class="h-60 overflow-hidden relative">
+                        <!-- Replace src with your actual project screenshot -->
+                        <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=800" alt="Eco Fuels" class="project-img w-full h-full object-cover opacity-40 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        <div class="absolute top-6 right-6 p-3 glass rounded-2xl">
+                             <i data-lucide="leaf" class="w-6 h-6 text-emerald-400"></i>
+                        </div>
+                    </div>
+                    <div class="p-10">
+                        <h3 class="text-2xl font-bold mb-4">Eco Fuels Awareness</h3>
+                        <p class="text-slate-400 mb-8 leading-relaxed">A platform designed to educate users on the shift to sustainable energy. Built with performance and accessibility in mind.</p>
+                        <a href="https://github.com/anshukumar8023" target="_blank" class="inline-flex items-center gap-2 text-emerald-400 font-bold hover:translate-x-2 transition-transform">
+                            Explore Repository <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Project Card 2 with Image -->
+                <div class="project-card glass rounded-[2.5rem] overflow-hidden group reveal">
+                    <div class="h-60 overflow-hidden relative">
+                        <!-- Replace src with your actual project screenshot -->
+                        <img src="https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&q=80&w=800" alt="Coaching Hub" class="project-img w-full h-full object-cover opacity-40 group-hover:opacity-100">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        <div class="absolute top-6 right-6 p-3 glass rounded-2xl">
+                            <i data-lucide="book-open" class="w-6 h-6 text-blue-400"></i>
+                        </div>
+                    </div>
+                    <div class="p-10">
+                        <h3 class="text-2xl font-bold mb-4">Digital Coaching Hub</h3>
+                        <p class="text-slate-400 mb-8 leading-relaxed">Scalable learning management system for tutors and students, featuring real-time tracking and content delivery.</p>
+                        <a href="https://github.com/anshukumar8023" target="_blank" class="inline-flex items-center gap-2 text-blue-400 font-bold hover:translate-x-2 transition-transform">
+                            Explore Repository <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="tab-content relative">
+            <!-- CV Download Button -->
+            <div class="absolute -top-12 right-0 reveal z-10">
+                <a href="12321163-anshu cv.pdf" download="12321163-anshu CV.pdf" target="_blank" class="glass px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-3 hover:bg-blue-600 hover:text-white transition-all border-blue-500/20 group">
+                    <i data-lucide="download" class="w-5 h-5 group-hover:animate-bounce"></i> DOWNLOAD CV
+                </a>
+            </div>
+
+            <div class="max-w-4xl mx-auto pt-10 reveal">
+                <div class="text-center mb-16">
+                    <div class="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                        <i data-lucide="send" class="text-blue-500 w-10 h-10"></i>
+                    </div>
+                    <h2 class="text-4xl font-black mb-6">Start a conversation.</h2>
+                    <p class="text-slate-400 text-lg leading-relaxed">I'm currently looking for new opportunities and collaborations in Android and Cloud engineering.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Email Card -->
+                    <a href="mailto:anshukumar2005a@gmail.com" class="glass p-8 rounded-3xl hover:border-blue-500/50 transition-all group flex items-start gap-6">
+                        <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600 transition-colors">
+                            <i data-lucide="mail" class="text-blue-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Email</p>
+                            <p class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors break-all">anshukumar2005a@gmail.com</p>
+                        </div>
+                    </a>
+
+                    <!-- Phone Card -->
+                    <a href="tel:+917696254439" class="glass p-8 rounded-3xl hover:border-green-500/50 transition-all group flex items-start gap-6">
+                        <div class="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-green-600 transition-colors">
+                            <i data-lucide="phone" class="text-green-500 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Mobile</p>
+                            <p class="text-lg font-bold text-white group-hover:text-green-400 transition-colors">+91 7696254439</p>
+                        </div>
+                    </a>
+
+                    <!-- Telegram Card -->
+                    <a href="https://t.me/Anshu332122" target="_blank" class="glass p-8 rounded-3xl hover:border-sky-500/50 transition-all group flex items-start gap-6">
+                        <div class="w-12 h-12 bg-sky-500/10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-sky-500 transition-colors">
+                            <i data-lucide="send" class="text-sky-400 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Telegram</p>
+                            <p class="text-lg font-bold text-white group-hover:text-sky-400 transition-colors">@Anshu332122</p>
+                        </div>
+                    </a>
+
+                    <!-- WhatsApp Card -->
+                    <a href="https://wa.me/917696254439" target="_blank" class="glass p-8 rounded-3xl hover:border-green-400/50 transition-all group flex items-start gap-6">
+                        <div class="w-12 h-12 bg-green-400/10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:bg-green-500 transition-colors">
+                            <i data-lucide="message-circle" class="text-green-400 group-hover:text-white transition-colors"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">WhatsApp</p>
+                            <p class="text-lg font-bold text-white group-hover:text-green-400 transition-colors">+91 7696254439</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-20 text-center border-t border-white/5">
+        <p class="text-slate-600 text-xs font-black tracking-widest uppercase">Designed & Engineered by Anshu Kumar • 2026</p>
+    </footer>
+
+    <script>
+        function initIcons() {
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function openCertModal(imageSrc, caption) {
+            const modal = document.getElementById('cert-modal');
+            const modalImg = document.getElementById('modal-img');
+            const modalCaption = document.getElementById('modal-caption');
+            modalImg.src = imageSrc;
+            modalCaption.innerText = caption;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCertModal() {
+            const modal = document.getElementById('cert-modal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const activeTab = document.getElementById(tabId);
+            if (activeTab) activeTab.classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabId) btn.classList.add('active-nav');
+                else btn.classList.remove('active-nav');
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(initIcons, 100);
+        }
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        function updateThemeUI() {
+            const isDark = html.classList.contains('dark');
+            document.querySelector('.sun-icon').classList.toggle('hidden', !isDark);
+            document.querySelector('.moon-icon').classList.toggle('hidden', isDark);
+        }
+
+        function setTheme(isDark) {
+            if (isDark) {
+                html.classList.add('dark');
+                html.classList.remove('light');
+            } else {
+                html.classList.add('light');
+                html.classList.remove('dark');
+            }
+            localStorage.setItem('portfolio-theme', isDark ? 'dark' : 'light');
+            updateThemeUI();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('portfolio-theme') || 'dark';
+            setTheme(savedTheme === 'dark');
+            themeToggle.addEventListener('click', () => setTheme(!html.classList.contains('dark')));
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { 
+                    if (entry.isIntersecting) entry.target.classList.add('visible'); 
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+            initIcons();
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeCertModal();
+            });
+        });
+    </script>
+</body>
+</html>
